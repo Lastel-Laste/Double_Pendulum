@@ -6,8 +6,7 @@ var positions = []; // 과거 위치 배열
 var trailLength = 1000; // 잔상 길이
 var trailOpacity = 0.2; // 잔상 투명도
 
-function init() {
-    var   b2Vec2 = Box2D.Common.Math.b2Vec2
+var   b2Vec2 = Box2D.Common.Math.b2Vec2
     ,	  b2BodyDef = Box2D.Dynamics.b2BodyDef
     ,	  b2Body = Box2D.Dynamics.b2Body
     ,	  b2FixtureDef = Box2D.Dynamics.b2FixtureDef
@@ -19,18 +18,18 @@ function init() {
     ,     b2RevoluteJointDef = Box2D.Dynamics.Joints.b2RevoluteJointDef
     ,     b2WeldJointDef = Box2D.Dynamics.Joints.b2WeldJointDef
     ,	  b2DebugDraw = Box2D.Dynamics.b2DebugDraw
-    ,     canvas = document.getElementById("canvas")
-    ,     ctx = canvas.getContext("2d")
+    ,     fixDef  = new b2FixtureDef
+    ,     bodyDef = new b2BodyDef
     ;
+
+function init() {
     
     world = new b2World(
         new b2Vec2(0, 9.8)    //gravity
     ,  true                 //allow sleep
     );
     
-    var fixDef  = new b2FixtureDef
-    ,   bodyDef = new b2BodyDef
-    ,   groundWidth = window.innerWidth
+    var groundWidth = window.innerWidth
     ,   groundHeight = window.innerHeight
     ;   fixDef.density = 1.0
     ;   fixDef.friction = 0.0
@@ -41,37 +40,37 @@ function init() {
     // StaticBody
     bodyDef.type = b2Body.b2_staticBody;
 
-    root = createCircle(groundWidth / 2, groundHeight / 2, 5, fixDef, bodyDef, b2Vec2, b2CircleShape);
+    root = createCircle(groundWidth / 2, groundHeight / 2, 5);
 
     // DynamicBody
     bodyDef.type = b2Body.b2_dynamicBody;
     
-    edge = createPolygon(groundWidth / 2 + 100, groundHeight / 2, 4, 100, 3, fixDef, bodyDef, b2Vec2, b2PolygonShape, 0, 0, 0)
+    edge = createPolygon(groundWidth / 2 + 100, groundHeight / 2, 4, 100, 3, 0, 0, 0)
     , edgeLength = 100 // The length of the edge
     , edgeAngle = edge.GetAngle() // The current angle of the edge
     , otherEndX = edge.GetPosition().x + edgeLength * Math.cos(edgeAngle)
     , otherEndY = edge.GetPosition().y + edgeLength * Math.sin(edgeAngle)
     ;
     
-    edge2 = createPolygon(otherEndX+100, otherEndY, 4, 100, 3, fixDef, bodyDef, b2Vec2, b2PolygonShape, 0, 0, 0)
+    edge2 = createPolygon(otherEndX+100, otherEndY, 4, 100, 3, 0, 0, 0)
     , edge2Length = 100 // The length of the edge
     , edge2Angle = edge2.GetAngle() // The current angle of the edge
     , otherEndX2 = edge2.GetPosition().x + edge2Length * Math.cos(edge2Angle)
     , otherEndY2 = edge2.GetPosition().y + edge2Length * Math.sin(edge2Angle)
     ;
-    end =  createCircle(otherEndX2, otherEndY2, 5, fixDef, bodyDef, b2Vec2, b2CircleShape);
+    end =  createCircle(otherEndX2, otherEndY2, 5);
     
     var jointAnchorRoot = root.GetWorldCenter();
-    createRevoluteJoint(root, edge, jointAnchorRoot, b2RevoluteJointDef);
+    createRevoluteJoint(root, edge, jointAnchorRoot);
     var jointAnchorEdge = new b2Vec2(otherEndX, otherEndY);
-    createRevoluteJoint(edge, edge2, jointAnchorEdge, b2RevoluteJointDef);
+    createRevoluteJoint(edge, edge2, jointAnchorEdge);
     var jointAnchorEdge2 = new b2Vec2(otherEndX2, otherEndY2);
-    createWeldJoint(edge2, end, jointAnchorEdge2, b2WeldJointDef);
+    createWeldJoint(edge2, end, jointAnchorEdge2);
 
     window.setInterval(update, 1000 / 240);
 };
 
-function createWall(x, y, width, height, bodyDef, b2Body, b2FixtureDef, b2PolygonShape) {
+function createWall(x, y, width, height) {
     bodyDef.type = b2Body.b2_staticBody;
     bodyDef.position.x = x;
     bodyDef.position.y = y;
@@ -86,7 +85,7 @@ function createWall(x, y, width, height, bodyDef, b2Body, b2FixtureDef, b2Polygo
     world.CreateBody(bodyDef).CreateFixture(wall);
 }
 
-function createCircle(x, y, size, fixDef, bodyDef, b2Vec2, b2CircleShape) {
+function createCircle(x, y, size) {
     fixDef.shape = new b2CircleShape (size);
     bodyDef.position.x = x;
     bodyDef.position.y = y;
@@ -104,7 +103,7 @@ function createCircle(x, y, size, fixDef, bodyDef, b2Vec2, b2CircleShape) {
     return objBody;
 }
 
-function createPolygon(x, y, n, Width, Height, fixDef, bodyDef, b2Vec2, b2PolygonShape, vx, vy, av) {
+function createPolygon(x, y, n, Width, Height, vx, vy, av) {
     var vertices = [];
     var angle = (Math.PI * 2) / n;
 
@@ -132,14 +131,14 @@ function createPolygon(x, y, n, Width, Height, fixDef, bodyDef, b2Vec2, b2Polygo
     return objBody;
 }
 
-function createWeldJoint(bodyA, bodyB, anchor, b2WeldJointDef) {
+function createWeldJoint(bodyA, bodyB, anchor) {
     var jointDef = new b2WeldJointDef();
     jointDef.Initialize(bodyA, bodyB, anchor);
     
     return world.CreateJoint(jointDef);
 }
 
-function createRevoluteJoint(bodyA, bodyB, anchor, b2RevoluteJointDef) {
+function createRevoluteJoint(bodyA, bodyB, anchor) {
     var jointDef = new b2RevoluteJointDef();
     jointDef.Initialize(bodyA, bodyB, anchor);
     
